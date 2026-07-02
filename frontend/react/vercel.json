@@ -1,11 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/hosting-api/(.*)",
-      "destination": "https://your-backend-api.com/$1"
+      "source": "/hosting-api/:path*",
+      "destination": "https://neco-api.onrender.com/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
