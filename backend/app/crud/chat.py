@@ -66,7 +66,7 @@ async def create_call_message(db, content: str, message_type: str, sender_id: in
     
     payload = {
         "type": "message",
-        "message_id": msg.id,
+        "id": msg.id,
         "sender_id": msg.sender_id,
         "sender_username": msg.sender.username,
         "avatar_url": msg.sender.avatar_url or "",

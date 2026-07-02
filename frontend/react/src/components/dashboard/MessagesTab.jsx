@@ -73,7 +73,7 @@ const MessagesTab = ({ friends, profile, isError, setError, setSuccess, showFrie
   const [showTextbox, setShowTextbox] = useState(false);
   const messageRefs = useRef({});
 
-  const LIMIT = 30;
+  const LIMIT = 10;
 
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -1366,6 +1366,7 @@ const MessagesTab = ({ friends, profile, isError, setError, setSuccess, showFrie
         {message.message_type === 'image' && 'Image'}
         {message.message_type === 'file' && 'Doument'}
         {message.message_type === 'voice' && 'Voice message'}
+        {message.message_type === 'system' && 'Call'}
       </Typography>
     )
   }
@@ -1720,6 +1721,7 @@ const MessagesTab = ({ friends, profile, isError, setError, setSuccess, showFrie
                             onPin={handlePinMessage}
                             isPinned={isPinned}
                             onScrollToMessage={scrollToMessage}
+                            onStartCall={() => handleStartCall({ callType: "voice" })}
                           />
                         </Box>
                       );

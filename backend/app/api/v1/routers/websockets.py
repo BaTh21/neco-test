@@ -165,7 +165,7 @@ async def global_websocket(websocket: WebSocket):
                         })
 
                         asyncio.create_task(
-                            await handle_call_timeout(room)
+                            handle_call_timeout(room_name)
                         )
 
                     elif event_type == "call_accept":
@@ -469,9 +469,6 @@ async def global_websocket(websocket: WebSocket):
                         # ADD MEMBERS
                         for member in members:
                             
-                            if manager.is_user_busy(member.id):
-                                continue
-                            
                             available_members.append(member)
 
                             participants.add(member.id)
@@ -521,7 +518,7 @@ async def global_websocket(websocket: WebSocket):
                         })
 
                         asyncio.create_task(
-                            await handle_call_timeout(room)
+                            handle_call_timeout(room_name)
                         )
 
                         continue

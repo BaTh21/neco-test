@@ -8,14 +8,16 @@ import { useMemo, useState, useRef, useEffect } from "react";
 import { Track } from "livekit-client";
 import CallButton from "./CallButton";
 import { useRoomContext } from "@livekit/components-react";
-import { RoomEvent } from "livekit-client";
 
 const PAGE_SIZE = 6;
 
-function FloatingLocalVideo({ trackRef }) {
+function FloatingLocalVideo({ trackRef, participantInfo }) {
   const [pos, setPos] = useState({ x: 20, y: 20 });
   const dragging = useRef(false);
   const offset = useRef({ x: 0, y: 0 });
+
+  const videoPublication = trackRef?.publication;
+  const isVideoOn = !videoPublication?.isMuted;
 
   const onMouseDown = (e) => {
     dragging.current = true;
@@ -51,31 +53,98 @@ function FloatingLocalVideo({ trackRef }) {
         borderRadius: 12,
         overflow: "hidden",
         cursor: "grab",
-        background: "black",
+        background: "#111",
         border: "2px solid #333",
       }}
     >
-      <div onMouseDown={onMouseDown} style={{ width: "100%", height: "100%" }}>
-        <VideoTrack
-          trackRef={trackRef}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
+      <div
+        onMouseDown={onMouseDown}
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "relative",
+        }}
+      >
+        {isVideoOn ? (
+          <VideoTrack
+            trackRef={trackRef}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "#fff",
+              background: "#222",
+            }}
+          >
+            {participantInfo?.avatar_url ? (
+              <img
+                src={participantInfo.avatar_url}
+                alt=""
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "50%",
+                  background: "#555",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 18,
+                  fontWeight: 700,
+                }}
+              >
+                {participantInfo?.username?.[0]?.toUpperCase() ?? "?"}
+              </div>
+            )}
+
+            <div style={{ marginTop: 6, fontSize: 12 }}>
+              {participantInfo?.username ?? "Me"}
+            </div>
+          </div>
+        )}
+
+        {/* label overlay */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 6,
+            left: 6,
+            padding: "4px 8px",
+            background: "rgba(0,0,0,.45)",
+            color: "#fff",
+            borderRadius: 6,
+            fontSize: 12,
+          }}
+        >
+          You
+        </div>
       </div>
     </div>
   );
 }
 
 function ParticipantTile({ trackRef, participantInfo }) {
-  const hasVideo = !!trackRef?.publication?.track;
-
-  console.log({
-    identity: trackRef.participant.identity,
-    isSubscribed: trackRef.publication?.isSubscribed,
-    isMuted: trackRef.publication?.isMuted,
-    track: trackRef.publication?.track,
-    kind: trackRef.publication?.kind,
-    source: trackRef.publication?.source,
-  });
+  const videoPublication = trackRef?.publication;
+  const hasVideo = videoPublication?.isMuted === false;
 
   return (
     <div
@@ -175,17 +244,6 @@ function MyVideoConference({ participants }) {
       withPlaceholder: true,
     },
   ]);
-
-  useEffect(() => {
-    console.log(
-      tracks.map(t => ({
-        identity: t.participant.identity,
-        hasTrack: !!t.track,
-        source: t.source,
-        local: t.participant.isLocal,
-      }))
-    );
-  }, [tracks]);
 
   const [page, setPage] = useState(0);
 
@@ -294,59 +352,15 @@ function MyVideoConference({ participants }) {
       )}
 
       {localTrack && (
-        <FloatingLocalVideo trackRef={localTrack} />
+        <FloatingLocalVideo
+          trackRef={localTrack}
+          participantInfo={participants.find(
+            p => String(p.user_id) === localTrack.participant.identity
+          )}
+        />
       )}
     </div>
   );
-}
-
-function RoomDebugger() {
-  const room = useRoomContext();
-
-  useEffect(() => {
-    console.log("Connected room:", room.name);
-
-    room.on(RoomEvent.ParticipantConnected, (p) => {
-      console.log("Participant connected:", p.identity);
-    });
-
-    room.on(RoomEvent.ParticipantDisconnected, (p) => {
-      console.log("Participant disconnected:", p.identity);
-    });
-
-    room.on(RoomEvent.TrackPublished, (pub, p) => {
-      console.log("Track published:", p.identity, pub.source);
-    });
-
-    room.on(RoomEvent.TrackSubscribed, (track, pub, p) => {
-      console.log("Track subscribed:", p.identity, pub.source);
-    });
-
-    console.log(room.state);
-    console.log(room.localParticipant.isCameraEnabled);
-    console.log(room.localParticipant.isMicrophoneEnabled);
-
-    room.on(RoomEvent.TrackPublished, (pub, participant) => {
-      console.log("Published", participant.identity, {
-        source: pub.source,
-        subscribed: pub.isSubscribed,
-        track: pub.track,
-      });
-    });
-
-    room.on(RoomEvent.TrackSubscribed, (track, pub, participant) => {
-      console.log("Subscribed", participant.identity, {
-        source: pub.source,
-        track,
-      });
-    });
-
-    return () => {
-      room.removeAllListeners();
-    };
-  }, [room]);
-
-  return null;
 }
 
 function PublishTracks() {
@@ -378,7 +392,6 @@ const CallRoom = ({ token, url, participants, onEndCall, onDisconnected }) => {
       onDisconnected={onDisconnected}
       style={{ height: "100vh", width: "100%" }}
     >
-      <RoomDebugger />
 
       <PublishTracks />
       {/* Plays all remote audio */}

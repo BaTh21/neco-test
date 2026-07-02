@@ -1275,7 +1275,7 @@ export const getPrivateChat = async (friendId, limit = 30, offset = 0, excludeTe
   }
 };
 
-export const getGroupMessage = async (groupId, limit = 30, offset = 0, excludeText = false) => {
+export const getGroupMessage = async (groupId, limit = 10, offset = 0, excludeText = false) => {
   try {
     const res = await api.get(
       `/api/v1/groups/${groupId}/message`,

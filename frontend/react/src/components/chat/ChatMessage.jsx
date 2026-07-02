@@ -47,7 +47,8 @@ const ChatMessage = ({
   onReact,
   onPin,
   isPinned,
-  onScrollToMessage
+  onScrollToMessage,
+  onStartCall
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -291,6 +292,7 @@ const ChatMessage = ({
           }}
           onClick={(e) => {
             e.stopPropagation();
+            onStartCall();
           }}
         >
           <CallIcon
@@ -643,6 +645,12 @@ const ChatMessage = ({
                       {message.reply_to.message_type === "file" && (
                         "File"
                       )}
+                      {message.reply_to.message_type === "system" && (
+                        "Call"
+                      )}
+                      {message.reply_to.message_type === "video" && (
+                        "Video"
+                      )}
                     </Typography>
 
                   </Box>
@@ -843,12 +851,14 @@ const ChatMessage = ({
                 </Box>
               );
 
-              menuItems.push(
-                <MenuItem key="pin" onClick={() => { onPin(message.id); handleClose(); }}>
-                  <PushPin fontSize="small" sx={{ mr: 1.5 }} />
-                  {isPinned ? 'Unpin' : 'Pin'}
-                </MenuItem>
-              );
+              if (message.message_type !== 'system') {
+                menuItems.push(
+                  <MenuItem key="pin" onClick={() => { onPin(message.id); handleClose(); }}>
+                    <PushPin fontSize="small" sx={{ mr: 1.5 }} />
+                    {isPinned ? 'Unpin' : 'Pin'}
+                  </MenuItem>
+                );
+              }
 
               menuItems.push(
                 <MenuItem key="reply" onClick={() => { onReply(); handleClose(); }}>

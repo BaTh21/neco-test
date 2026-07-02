@@ -101,7 +101,7 @@ const GroupChatPage = ({ groupId, toggleGroupList, chats, setError, currentChatI
   const [isUploadingFiles, setIsUploadingFiles] = useState(false);
   const [sending, setSending] = useState(false);
 
-  const LIMIT = 30;
+  const LIMIT = 10;
   const pageRef = useRef(0);
 
   const [hasMore, setHasMore] = useState(true);
@@ -1182,6 +1182,10 @@ const GroupChatPage = ({ groupId, toggleGroupList, chats, setError, currentChatI
           wordBreak: 'break-word',
           transition: 'all 0.2s',
         }}
+        onClick={(e) => {
+          e.stopPropagation();
+          openSecondMenu(e, message.id);
+        }}
       >
         <Typography
           variant="body2"
@@ -1210,6 +1214,7 @@ const GroupChatPage = ({ groupId, toggleGroupList, chats, setError, currentChatI
           }}
           onClick={(e) => {
             e.stopPropagation();
+            handleStartGroupCall({ callType: "voice" });
           }}
         >
           <CallIcon
@@ -1232,6 +1237,7 @@ const GroupChatPage = ({ groupId, toggleGroupList, chats, setError, currentChatI
         {message.message_type === 'image' && 'Image'}
         {message.message_type === 'file' && 'Doument'}
         {message.message_type === 'voice' && 'Voice message'}
+        {message.message_type === 'system' && 'Call'}
       </Typography>
     )
   }
@@ -1754,6 +1760,9 @@ const GroupChatPage = ({ groupId, toggleGroupList, chats, setError, currentChatI
                                       {message.parent_message.message_type === "video" && (
                                         "Video"
                                       )}
+                                      {message.parent_message.message_type === "system" && (
+                                        "Call"
+                                      )}
                                     </Typography>
 
                                   </Box>
@@ -2016,19 +2025,22 @@ const GroupChatPage = ({ groupId, toggleGroupList, chats, setError, currentChatI
               </Box>
               {activeMessage &&
                 [
-                  <MenuItem
-                    key="pin"
-                    onClick={() => {
-                      activeMessage.id === group.pinned_message?.id
-                        ? handleUnpinMessage(activeMessage.id)
-                        : handlePinMessage(activeMessage);
+                  !activeMessage.message_type === 'system'
+                    ? (
+                      <MenuItem
+                        key="pin"
+                        onClick={() => {
+                          activeMessage.id === group.pinned_message?.id
+                            ? handleUnpinMessage(activeMessage.id)
+                            : handlePinMessage(activeMessage);
 
-                      closeSecondMenu();
-                    }}
-                  >
-                    <PushPinIcon sx={{ mr: 1.5 }} />
-                    {activeMessage.id === group.pinned_message?.id ? "Unpin" : "Pin"}
-                  </MenuItem>,
+                          closeSecondMenu();
+                        }}
+                      >
+                        <PushPinIcon sx={{ mr: 1.5 }} />
+                        {activeMessage.id === group.pinned_message?.id ? "Unpin" : "Pin"}
+                      </MenuItem>
+                    ) : null,
 
                   <MenuItem
                     key="reply"
@@ -2040,7 +2052,7 @@ const GroupChatPage = ({ groupId, toggleGroupList, chats, setError, currentChatI
                     <ReplyIcon sx={{ mr: 1.5 }} /> Reply
                   </MenuItem>,
 
-                  !activeMessage.call_content
+                  !activeMessage.message_type === 'system'
                     ? (
                       <MenuItem
                         key="forward"
@@ -2055,7 +2067,7 @@ const GroupChatPage = ({ groupId, toggleGroupList, chats, setError, currentChatI
                     )
                     : null,
 
-                  activeMessage.content && activeMessage.sender?.id === user?.id
+                  activeMessage.content && activeMessage.sender?.id === user?.id && !activeMessage.message_type === 'system'
                     ? (
                       <MenuItem
                         key="edit"
