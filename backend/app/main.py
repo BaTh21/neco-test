@@ -25,13 +25,18 @@ from app.api.v1.routers import upload
 from app.api.v1.routers import support
 from app.core.config import settings
 
+# ==================== CREATE DATABASE TABLES ====================
 Base.metadata.create_all(bind=engine)
+
+# ==================== CONFIGURE CLOUDINARY ====================
 configure_cloudinary()
 
+# ==================== INIT FASTAPI APP ====================
 app = FastAPI(
     title="NECO360",
 )
 
+# ==================== CORS MIDDLEWARE ====================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOW_ORIGINS,
@@ -41,7 +46,12 @@ app.add_middleware(
     max_age=86400,
 )
 
-# Include API routers
+# ==================== HEALTH CHECK ROUTE (សម្រាប់ Render) ====================
+@app.get("/")
+def health_check():
+    return {"status": "ok", "message": "NECO360 Backend is running!"}
+
+# ==================== INCLUDE API ROUTERS ====================
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(chats.router, prefix="/api/v1/chats", tags=["chats"])
@@ -62,3 +72,13 @@ os.makedirs("static/avatars", exist_ok=True)
 
 if os.path.exists("dist"):
     app.mount("/", StaticFiles(directory="dist", html=True), name="react-app")
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(
+        "app.main:app",   
+        host="0.0.0.0",
+        port=port,
+        reload=False       
+    )
