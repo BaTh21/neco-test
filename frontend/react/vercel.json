@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/hosting-api/:path*",
-      "destination": "https://neco-api.onrender.com/:path*"
+      "destination": "https://neco-yvvz.onrender.com/:path*"
     },
     {
       "source": "/:path*",
