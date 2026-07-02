@@ -1,0 +1,26 @@
+# Environment variables - NEVER commit secrets
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+
+# logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Flutter/Android build (if needed)
+android/.gradle/

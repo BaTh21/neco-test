@@ -1,0 +1,36 @@
+# Environment files (be careful if you use build-time secrets)
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# dependencies
+**/node_modules
+
+# build outputs
+dist/
+build/
+
+# logs
+*.log
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+
+# Python (if backend is Python)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Docker / compose files (optional but recommended)
+docker-compose.yml
+Dockerfile
